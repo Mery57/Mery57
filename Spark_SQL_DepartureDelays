@@ -1,0 +1,563 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Mery57/Mery57/blob/main/Spark_SQL_DepartureDelays\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "e01361ef",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "e01361ef",
+        "outputId": "f8e6eee5-d23b-4bb6-e985-1dbca4200ade"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Collecting pyspark\n",
+            "  Downloading pyspark-3.5.1.tar.gz (317.0 MB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m317.0/317.0 MB\u001b[0m \u001b[31m3.0 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25h  Preparing metadata (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "Requirement already satisfied: py4j==0.10.9.7 in /usr/local/lib/python3.10/dist-packages (from pyspark) (0.10.9.7)\n",
+            "Building wheels for collected packages: pyspark\n",
+            "  Building wheel for pyspark (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for pyspark: filename=pyspark-3.5.1-py2.py3-none-any.whl size=317488491 sha256=1acb1d3d708ca24b99d60b109790e4fb67bc46ea3ca18cb5524ba74a7225d164\n",
+            "  Stored in directory: /root/.cache/pip/wheels/80/1d/60/2c256ed38dddce2fdd93be545214a63e02fbd8d74fb0b7f3a6\n",
+            "Successfully built pyspark\n",
+            "Installing collected packages: pyspark\n",
+            "Successfully installed pyspark-3.5.1\n"
+          ]
+        }
+      ],
+      "source": [
+        "!pip install pyspark\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "a0b8c06b",
+      "metadata": {
+        "id": "a0b8c06b"
+      },
+      "outputs": [],
+      "source": [
+        "from pyspark.sql import SparkSession\n",
+        "spark=SparkSession.builder.master('local').appName('TP_SQL').getOrCreate()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "9c3d8298",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "9c3d8298",
+        "outputId": "4ac446d5-67f3-4bc1-bef2-f02b23428622"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "--2024-06-24 13:00:43--  https://github.com/mtaileb/BigData/raw/main/TP_Spark/departuredelays.zip\n",
+            "Resolving github.com (github.com)... 140.82.112.4\n",
+            "Connecting to github.com (github.com)|140.82.112.4|:443... connected.\n",
+            "HTTP request sent, awaiting response... 302 Found\n",
+            "Location: https://raw.githubusercontent.com/mtaileb/BigData/main/TP_Spark/departuredelays.zip [following]\n",
+            "--2024-06-24 13:00:43--  https://raw.githubusercontent.com/mtaileb/BigData/main/TP_Spark/departuredelays.zip\n",
+            "Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.108.133, 185.199.109.133, 185.199.110.133, ...\n",
+            "Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... connected.\n",
+            "HTTP request sent, awaiting response... 200 OK\n",
+            "Length: 6624416 (6.3M) [application/zip]\n",
+            "Saving to: ‘departuredelays.zip’\n",
+            "\n",
+            "departuredelays.zip 100%[===================>]   6.32M  --.-KB/s    in 0.09s   \n",
+            "\n",
+            "2024-06-24 13:00:43 (71.1 MB/s) - ‘departuredelays.zip’ saved [6624416/6624416]\n",
+            "\n",
+            "Archive:  departuredelays.zip\n",
+            "  inflating: departuredelays.csv     \n"
+          ]
+        }
+      ],
+      "source": [
+        "!wget -O departuredelays.zip https://github.com/mtaileb/BigData/raw/main/TP_Spark/departuredelays.zip\n",
+        "! unzip departuredelays.zip\n",
+        "df= spark.read.csv('departuredelays.csv', inferSchema=True, header=True)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "ca5f9953",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ca5f9953",
+        "outputId": "36ef8c69-a5d2-49d1-faa5-fc08fb6d68cd"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-------+-----+--------+------+-----------+\n",
+            "|   date|delay|distance|origin|destination|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "|1011245|    6|     602|   ABE|        ATL|\n",
+            "|1020600|   -8|     369|   ABE|        DTW|\n",
+            "|1021245|   -2|     602|   ABE|        ATL|\n",
+            "|1020605|   -4|     602|   ABE|        ATL|\n",
+            "|1031245|   -4|     602|   ABE|        ATL|\n",
+            "|1030605|    0|     602|   ABE|        ATL|\n",
+            "|1041243|   10|     602|   ABE|        ATL|\n",
+            "|1040605|   28|     602|   ABE|        ATL|\n",
+            "|1051245|   88|     602|   ABE|        ATL|\n",
+            "|1050605|    9|     602|   ABE|        ATL|\n",
+            "|1061215|   -6|     602|   ABE|        ATL|\n",
+            "|1061725|   69|     602|   ABE|        ATL|\n",
+            "|1061230|    0|     369|   ABE|        DTW|\n",
+            "|1060625|   -3|     602|   ABE|        ATL|\n",
+            "|1070600|    0|     369|   ABE|        DTW|\n",
+            "|1071725|    0|     602|   ABE|        ATL|\n",
+            "|1071230|    0|     369|   ABE|        DTW|\n",
+            "|1070625|    0|     602|   ABE|        ATL|\n",
+            "|1071219|    0|     569|   ABE|        ORD|\n",
+            "|1080600|    0|     369|   ABE|        DTW|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "only showing top 20 rows\n",
+            "\n"
+          ]
+        }
+      ],
+      "source": [
+        "df.show()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "f3e052c2",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "f3e052c2",
+        "outputId": "e688ff89-3ef3-4eff-a866-8ffdcda91a3a"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "root\n",
+            " |-- date: integer (nullable = true)\n",
+            " |-- delay: integer (nullable = true)\n",
+            " |-- distance: integer (nullable = true)\n",
+            " |-- origin: string (nullable = true)\n",
+            " |-- destination: string (nullable = true)\n",
+            "\n"
+          ]
+        }
+      ],
+      "source": [
+        "df.printSchema()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "4ac67066",
+      "metadata": {
+        "id": "4ac67066"
+      },
+      "outputs": [],
+      "source": [
+        "#Créer une table \" flights_tbl \" à partir du dataframe.\n",
+        "df.createOrReplaceTempView('flights_tbl')"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "pnJZTT2Vpb2i"
+      },
+      "id": "pnJZTT2Vpb2i"
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "945006a5",
+      "metadata": {
+        "id": "945006a5",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "3157861a-d294-47f7-9a5e-dd4875ddabfe"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-------+-----+--------+------+-----------+\n",
+            "|   date|delay|distance|origin|destination|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "|1012355|    0|    1586|   ABQ|        JFK|\n",
+            "|1022355|  158|    1586|   ABQ|        JFK|\n",
+            "|1032355|    0|    1586|   ABQ|        JFK|\n",
+            "|1042355|    0|    1586|   ABQ|        JFK|\n",
+            "|1052355|    0|    1586|   ABQ|        JFK|\n",
+            "|1062355|    0|    1586|   ABQ|        JFK|\n",
+            "|1072359|   14|    1586|   ABQ|        JFK|\n",
+            "|1082358|   -4|    1586|   ABQ|        JFK|\n",
+            "|1092358|   20|    1586|   ABQ|        JFK|\n",
+            "|1102358|   -2|    1586|   ABQ|        JFK|\n",
+            "|1112358|  116|    1586|   ABQ|        JFK|\n",
+            "|1122358|    0|    1586|   ABQ|        JFK|\n",
+            "|1132358|  -10|    1586|   ABQ|        JFK|\n",
+            "|1142359|  -17|    1586|   ABQ|        JFK|\n",
+            "|1152358|  135|    1586|   ABQ|        JFK|\n",
+            "|1162358|  -13|    1586|   ABQ|        JFK|\n",
+            "|1172358|  -10|    1586|   ABQ|        JFK|\n",
+            "|1182358|  -17|    1586|   ABQ|        JFK|\n",
+            "|1192358|  -18|    1586|   ABQ|        JFK|\n",
+            "|1202358|   -9|    1586|   ABQ|        JFK|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "only showing top 20 rows\n",
+            "\n"
+          ]
+        }
+      ],
+      "source": [
+        "#Trouver tous les vols dont la distance est supérieure à 1 000 miles.\n",
+        "spark.sql('select * from flights_tbl where distance>1000 ').show()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "275e49ff",
+      "metadata": {
+        "id": "275e49ff",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "0a77a2ba-87f1-4909-947e-a7e01140cf75"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-------+-----+--------+------+-----------+\n",
+            "|   date|delay|distance|origin|destination|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "|2190925| 1638|    1604|   SFO|        ORD|\n",
+            "|1031755|  396|    1604|   SFO|        ORD|\n",
+            "|1022330|  326|    1604|   SFO|        ORD|\n",
+            "|1051205|  320|    1604|   SFO|        ORD|\n",
+            "|1190925|  297|    1604|   SFO|        ORD|\n",
+            "|2171115|  296|    1604|   SFO|        ORD|\n",
+            "|1071040|  279|    1604|   SFO|        ORD|\n",
+            "|1051550|  274|    1604|   SFO|        ORD|\n",
+            "|3120730|  266|    1604|   SFO|        ORD|\n",
+            "|1261104|  258|    1604|   SFO|        ORD|\n",
+            "|1161210|  225|    1604|   SFO|        ORD|\n",
+            "|2091800|  223|    1604|   SFO|        ORD|\n",
+            "|1221040|  215|    1604|   SFO|        ORD|\n",
+            "|3121155|  203|    1604|   SFO|        ORD|\n",
+            "|2111256|  197|    1604|   SFO|        ORD|\n",
+            "|3311405|  196|    1604|   SFO|        ORD|\n",
+            "|1031920|  193|    1604|   SFO|        ORD|\n",
+            "|1021410|  190|    1604|   SFO|        ORD|\n",
+            "|3171215|  189|    1604|   SFO|        ORD|\n",
+            "|1101410|  184|    1604|   SFO|        ORD|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "only showing top 20 rows\n",
+            "\n"
+          ]
+        }
+      ],
+      "source": [
+        "#Trouvez tous les vols entre San Francisco (SFO) et Chicago (ORD) avec au moins deux heures de retard.\n",
+        "#spark.sql(\"select date, origin, destination, delay from flights_tbl where delay > 120 and origin='SFO' and destination='ORD' order by delay DESC \").show(10)\n",
+        "\n",
+        "spark.sql('select * from flights_tbl where delay>120 and origin= \"SFO\" and destination= \"ORD\" order by delay DESC').show()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "33ad9d01",
+      "metadata": {
+        "id": "33ad9d01"
+      },
+      "outputs": [],
+      "source": [
+        "#étiqueter tous les vols, quelle que soit leur origine et leur destination, avec une indication des retards\n",
+        "#qu'ils ont subis\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from pyspark.sql.functions import when\n",
+        "\n",
+        "vols_retardés = df.withColumn(\"delay_status\", when(df.delay > 60, \"Delayed\").otherwise(\"On Time\"))\n",
+        "\n",
+        "vols_retardés.show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "er408w2b1afX",
+        "outputId": "850a2d6c-e0f8-4dcd-b091-dca2f0cc9272"
+      },
+      "id": "er408w2b1afX",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-------+-----+--------+------+-----------+------------+\n",
+            "|   date|delay|distance|origin|destination|delay_status|\n",
+            "+-------+-----+--------+------+-----------+------------+\n",
+            "|1011245|    6|     602|   ABE|        ATL|     On Time|\n",
+            "|1020600|   -8|     369|   ABE|        DTW|     On Time|\n",
+            "|1021245|   -2|     602|   ABE|        ATL|     On Time|\n",
+            "|1020605|   -4|     602|   ABE|        ATL|     On Time|\n",
+            "|1031245|   -4|     602|   ABE|        ATL|     On Time|\n",
+            "|1030605|    0|     602|   ABE|        ATL|     On Time|\n",
+            "|1041243|   10|     602|   ABE|        ATL|     On Time|\n",
+            "|1040605|   28|     602|   ABE|        ATL|     On Time|\n",
+            "|1051245|   88|     602|   ABE|        ATL|     Delayed|\n",
+            "|1050605|    9|     602|   ABE|        ATL|     On Time|\n",
+            "|1061215|   -6|     602|   ABE|        ATL|     On Time|\n",
+            "|1061725|   69|     602|   ABE|        ATL|     Delayed|\n",
+            "|1061230|    0|     369|   ABE|        DTW|     On Time|\n",
+            "|1060625|   -3|     602|   ABE|        ATL|     On Time|\n",
+            "|1070600|    0|     369|   ABE|        DTW|     On Time|\n",
+            "|1071725|    0|     602|   ABE|        ATL|     On Time|\n",
+            "|1071230|    0|     369|   ABE|        DTW|     On Time|\n",
+            "|1070625|    0|     602|   ABE|        ATL|     On Time|\n",
+            "|1071219|    0|     569|   ABE|        ORD|     On Time|\n",
+            "|1080600|    0|     369|   ABE|        DTW|     On Time|\n",
+            "+-------+-----+--------+------+-----------+------------+\n",
+            "only showing top 20 rows\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "id": "5cf614c1",
+      "metadata": {
+        "id": "5cf614c1"
+      },
+      "outputs": [],
+      "source": [
+        "# Afficher (par ordre descendant) les vols dont la distance est > 1000\n",
+        "filtered_flights = spark.sql('select * from flights_tbl where distance > 1000 order by distance desc')\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "filtered_flights.show(5)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "3xkQUf7pBTyF",
+        "outputId": "ff8a8ee2-b3db-4dd5-84c4-ca79ab3a5807"
+      },
+      "id": "3xkQUf7pBTyF",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-------+-----+--------+------+-----------+\n",
+            "|   date|delay|distance|origin|destination|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "|1011625|   -4|    4330|   HNL|        JFK|\n",
+            "|1061625|    0|    4330|   HNL|        JFK|\n",
+            "|1021625|  110|    4330|   HNL|        JFK|\n",
+            "|1031625|   -1|    4330|   HNL|        JFK|\n",
+            "|1041625|   -7|    4330|   HNL|        JFK|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "only showing top 5 rows\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "flights_triés=df.orderBy(filtered_flights.distance.desc())\n",
+        "flights_triés.show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "V7HoHhwLxY7i",
+        "outputId": "f81ab029-9edf-420d-ea51-7eff411f0809"
+      },
+      "id": "V7HoHhwLxY7i",
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-------+-----+--------+------+-----------+\n",
+            "|   date|delay|distance|origin|destination|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "|1011625|   -4|    4330|   HNL|        JFK|\n",
+            "|1211625|  115|    4330|   HNL|        JFK|\n",
+            "|1021625|  110|    4330|   HNL|        JFK|\n",
+            "|1031625|   -1|    4330|   HNL|        JFK|\n",
+            "|1041625|   -7|    4330|   HNL|        JFK|\n",
+            "|1051625|   18|    4330|   HNL|        JFK|\n",
+            "|1061625|    0|    4330|   HNL|        JFK|\n",
+            "|1071625|    0|    4330|   HNL|        JFK|\n",
+            "|1081625|   -5|    4330|   HNL|        JFK|\n",
+            "|1091625|    0|    4330|   HNL|        JFK|\n",
+            "|1101625|   -2|    4330|   HNL|        JFK|\n",
+            "|1111625|  -10|    4330|   HNL|        JFK|\n",
+            "|1121625|    6|    4330|   HNL|        JFK|\n",
+            "|1131625|    0|    4330|   HNL|        JFK|\n",
+            "|1141625|   -1|    4330|   HNL|        JFK|\n",
+            "|1151625|   -9|    4330|   HNL|        JFK|\n",
+            "|1161625|   -8|    4330|   HNL|        JFK|\n",
+            "|1171625|    0|    4330|   HNL|        JFK|\n",
+            "|1181625|   -8|    4330|   HNL|        JFK|\n",
+            "|1191625|  -10|    4330|   HNL|        JFK|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "only showing top 20 rows\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 16,
+      "id": "408b2529",
+      "metadata": {
+        "id": "408b2529"
+      },
+      "outputs": [],
+      "source": [
+        "# Afficher (par ordre descendant de retard) les vols provenant de SFO et allant vers ORD dont le retard est > 100\n",
+        "vols_SFO_ORD = spark.sql(\"\"\"\n",
+        "    SELECT *\n",
+        "    FROM flights_tbl\n",
+        "    WHERE origin = 'SFO' AND destination = 'ORD' AND delay > 100\n",
+        "    ORDER BY delay DESC\n",
+        "\"\"\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "vols_SFO_ORD.show()\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "KUkrv5QhXWY6",
+        "outputId": "ff84b3ce-ac0c-4102-ee25-776f7e3e646a"
+      },
+      "id": "KUkrv5QhXWY6",
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-------+-----+--------+------+-----------+\n",
+            "|   date|delay|distance|origin|destination|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "|2190925| 1638|    1604|   SFO|        ORD|\n",
+            "|1031755|  396|    1604|   SFO|        ORD|\n",
+            "|1022330|  326|    1604|   SFO|        ORD|\n",
+            "|1051205|  320|    1604|   SFO|        ORD|\n",
+            "|1190925|  297|    1604|   SFO|        ORD|\n",
+            "|2171115|  296|    1604|   SFO|        ORD|\n",
+            "|1071040|  279|    1604|   SFO|        ORD|\n",
+            "|1051550|  274|    1604|   SFO|        ORD|\n",
+            "|3120730|  266|    1604|   SFO|        ORD|\n",
+            "|1261104|  258|    1604|   SFO|        ORD|\n",
+            "|1161210|  225|    1604|   SFO|        ORD|\n",
+            "|2091800|  223|    1604|   SFO|        ORD|\n",
+            "|1221040|  215|    1604|   SFO|        ORD|\n",
+            "|3121155|  203|    1604|   SFO|        ORD|\n",
+            "|2111256|  197|    1604|   SFO|        ORD|\n",
+            "|3311405|  196|    1604|   SFO|        ORD|\n",
+            "|1031920|  193|    1604|   SFO|        ORD|\n",
+            "|1021410|  190|    1604|   SFO|        ORD|\n",
+            "|3171215|  189|    1604|   SFO|        ORD|\n",
+            "|1101410|  184|    1604|   SFO|        ORD|\n",
+            "+-------+-----+--------+------+-----------+\n",
+            "only showing top 20 rows\n",
+            "\n"
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3 (ipykernel)",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.9.12"
+    },
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
